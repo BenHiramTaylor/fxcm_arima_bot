@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /APISettings.json
+/Logs
+/JSON
+/Bot_Logs.txt
