@@ -1,0 +1,7 @@
+{
+    "API_Secret":"",
+    "API_Key":"",
+    "Interval":7200,
+    "Ticker":"",
+    "AutoTrade":true
+}
