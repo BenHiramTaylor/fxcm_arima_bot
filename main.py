@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
         while True:
             # GET UPDATED DF
-            new_df = con.get_candles(instrument=ticker,period=interval)
+            new_df = con.get_candles(instrument=ticker,period=interval,number=10000)
             new_df.index = new_df.index.astype(str)
             new_df.rename(columns={"askclose":"close", "askhigh":"high", "asklow":"low"},inplace=True)
             new_df.drop(["bidopen","bidclose","bidhigh","bidlow","askopen","tickqty"],axis=1,inplace=True)
