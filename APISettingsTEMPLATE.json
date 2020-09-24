@@ -2,7 +2,6 @@
     "access_token":"",
     "account_type":"demo",
     "account_id":"",
-    "interval":"m5",
     "ticker":"USDT_BTC",
     "auto_trade":false
 }
