@@ -7,6 +7,26 @@ import time
 from statsmodels.tsa.arima_model import ARIMA
 import warnings
 
+def KillOldTrades():
+    # REFRESH ALL OPEN POSITIONS
+    open_positions = con.get_open_positions(kind="list")
+    killed_positions = False
+    # KILL OFF OLD TRADES IF STILL OPEN
+    if next_interval:
+        five_periods_ago = next_interval - dt.timedelta(seconds=interval_seconds*6)
+        if len(open_positions):
+            for t in open_positions:
+                tradeTS = dt.datetime.fromtimestamp(t["time"])
+                if tradeTS < five_periods_ago:
+                    print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than 5 intervals.")
+                    con.close_trade(t["tradeId"])
+                    killed_positions = True
+    
+    # REFRESH POSITIONS IF KILLED TRADES
+    if killed_positions:
+        open_positions = con.get_open_positions(kind="list")
+    return open_positions
+
 def get_trade_size(predicted_price, direction):
     # TODO FINISH THE FUNCTION AND PLACE TRADES WITH A LIMIT PRICE AND A 2:1 RR
     accounts= con.get_accounts(kind="list")
@@ -105,30 +125,37 @@ if __name__ == "__main__":
                 next_interval = last_run_dt + dt.timedelta(seconds=interval_seconds)
                 continue
         else:
-            next_interval = next_interval + dt.timedelta(seconds=30)
+            next_interval = next_interval + dt.timedelta(seconds=20)
             next_interval_sleep = next_interval.timestamp()-dt.datetime.now(tz=dt.timezone.utc).timestamp()
             if next_interval_sleep > 0:
                 next_interval_string = dt.datetime.strftime(next_interval,"%Y-%m-%d %H:%M:%S%z")
                 print(f"We have the next interval, sleeping until then. See you in {next_interval_sleep} seconds at {next_interval_string}")
                 time.sleep(next_interval_sleep)
         
-        # REFRESH ALL OPEN POSITIONS
-        open_positions = con.get_open_positions(kind="list")
-        killed_positions = False
-        # KILL OFF OLD TRADES IF STILL OPEN
-        if next_interval:
-            five_periods_ago = next_interval - dt.timedelta(seconds=interval_seconds*6)
-            if len(open_positions):
-                for t in open_positions:
-                    tradeTS = dt.datetime.fromtimestamp(t["time"])
-                    if tradeTS < five_periods_ago:
-                        print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than 5 intervals.")
-                        con.close_trade(t["tradeId"])
-                        killed_positions = True
+        # SLEEPING ON HOLS AND MARKET CLOSE TIME
+        today = dt.datetime.now(tz=dt.timezone.utc)
+        if today.month == 12:
+            if today.day == 25:
+                print("It is Christmas Day! No trading today! Merry Christmas!")
+                time.sleep(86400)
+                next_interval = None
+                continue
+        elif today.month == 1:
+            if today.day == 1:
+                print("It is the new year today! Happy new year!!")
+                time.sleep(86400)
+                next_interval = None
+                continue
+        elif today.today().weekday() == 5:
+            if today.hour == 20:
+                print("Markets closing in one hour for the weekend!, closing all trades, see you in 180000 seconds!")
+                con.close_all()
+                time.sleep(180000)
+                next_interval = None
+                continue
         
-        # REFRESH POSITIONS IF KILLED TRADES
-        if killed_positions:
-            open_positions = con.get_open_positions(kind="list")
+        # REFRESH ALL OPEN POSITIONS
+        open_positions = KillOldTrades()
 
         # CREATE DF AND DUMP TO JSON
         if not os.path.exists(f"JSON\\{ticker_file}_{interval}_price_log.json"):
