@@ -92,7 +92,7 @@ if __name__ == "__main__":
     auto_trade = config["auto_trade"]
     next_interval = None
     interval_seconds = period_to_seconds[interval]
-    con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="warn")
+    con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
     print("Generated Default configs and established a connection to FXCM.")
 
     while True:
