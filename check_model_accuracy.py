@@ -6,6 +6,7 @@ if __name__ == "__main__":
         config = json.load(f)
     interval = config["interval"]
     ticker = config["ticker"].replace("/","")
+    difference_to_trade = 5
     if not os.path.exists(f"JSON\\{ticker}_{interval}_trade_log.json"):
         print(f"There is no saved data to analyse with the ticker: {ticker} at the interval {interval}.")
     else:
@@ -33,14 +34,14 @@ if __name__ == "__main__":
                     correct_trades_taken.append(1)
             
             if data[period]["predicted_direction_from_current"] == "Higher":
-                if (data[period]["prediction"] - data[period]["previous_close"]) > 5:
+                if (data[period]["prediction"] - data[period]["previous_close"]) > difference_to_trade:
                     could_have_taken.append(1)
-                    if (data[period]["close"] - data[period]["previous_close"]) > 5:
+                    if (data[period]["close"] - data[period]["previous_close"]) > difference_to_trade:
                         could_have_taken_correct.append(1)
             else:
-                if (data[period]["previous_close"] - data[period]["prediction"]) > 5:
+                if (data[period]["previous_close"] - data[period]["prediction"]) > difference_to_trade:
                     could_have_taken.append(1)
-                    if (data[period]["previous_close"] - data[period]["close"]) > 5:
+                    if (data[period]["previous_close"] - data[period]["close"]) > difference_to_trade:
                         could_have_taken_correct.append(1)
 
         if len(total_predictions) > 0:
