@@ -81,7 +81,8 @@ if __name__ == "__main__":
         os.mkdir("JSON")
     with open("APISettings.json", "r") as f:
         config = json.load(f)
-    # CREATE DEFAULT VARS AND RELOAD USING reload_configs
+    # CREATE DEFAULT VARS
+    period_to_seconds = {"m5":300,"m15":900,"H1":3600}
     access_token = config["access_token"]
     account_id = config["account_id"]
     account_type = config["account_type"]
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     ticker_file = ticker.replace("/","")
     auto_trade = config["auto_trade"]
     next_interval = None
-    interval_seconds = 300
+    interval_seconds = period_to_seconds[interval]
     con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="warn")
     print("Generated Default configs and established a connection to FXCM.")
 
@@ -125,7 +126,7 @@ if __name__ == "__main__":
                 next_interval = last_run_dt + dt.timedelta(seconds=interval_seconds)
                 continue
         else:
-            next_interval = next_interval + dt.timedelta(seconds=20)
+            next_interval = next_interval + dt.timedelta(seconds=30)
             next_interval_sleep = next_interval.timestamp()-dt.datetime.now(tz=dt.timezone.utc).timestamp()
             if next_interval_sleep > 0:
                 next_interval_string = dt.datetime.strftime(next_interval,"%Y-%m-%d %H:%M:%S%z")
