@@ -101,10 +101,10 @@ if __name__ == "__main__":
                 print(f"It has been {time_since_run} seconds since last run. running now..")
             else:
                 last_run_dt = dt.datetime.fromtimestamp(LastRun)
-                next_interval = last_run_dt + dt.timedelta(seconds=interval)
+                next_interval = last_run_dt + dt.timedelta(seconds=interval_seconds)
                 continue
         else:
-            next_interval = next_interval + dt.timedelta(seconds=10)
+            next_interval = next_interval + dt.timedelta(seconds=30)
             next_interval_sleep = next_interval.timestamp()-dt.datetime.now(tz=dt.timezone.utc).timestamp()
             if next_interval_sleep > 0:
                 next_interval_string = dt.datetime.strftime(next_interval,"%Y-%m-%d %H:%M:%S")
@@ -162,8 +162,6 @@ if __name__ == "__main__":
             if next_interval > dt.datetime.now(tz=dt.timezone.utc):
                 break
             else:
-                print(next_interval)
-                print(dt.datetime.now(tz=dt.timezone.utc))
                 print_current_interval = dt.datetime.strftime(current_interval, "%Y-%m-%d %H:%M:%S")
                 print(f"Current interval received was {print_current_interval}, which should be wrong, sleeping for 5 seconds and reloading DataFrame")
                 time.sleep(5)
