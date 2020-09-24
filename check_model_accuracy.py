@@ -6,7 +6,7 @@ if __name__ == "__main__":
         config = json.load(f)
     interval = config["interval"]
     ticker = config["ticker"].replace("/","")
-    difference_to_trade = 5
+    difference_to_trade = 0.00001
     if not os.path.exists(f"JSON\\{ticker}_{interval}_trade_log.json"):
         print(f"There is no saved data to analyse with the ticker: {ticker} at the interval {interval}.")
     else:
