@@ -16,6 +16,7 @@ if __name__ == "__main__":
         correct_trades_taken = list()
         could_have_taken = list()
         could_have_taken_correct = list()
+        differences = list()
         with open(f"JSON\\{ticker}_{interval}_trade_log.json","r") as f:
             data = json.load(f)
 
@@ -32,6 +33,11 @@ if __name__ == "__main__":
                 trades_taken.append(1)
                 if data[period]["correct_prediction"]:
                     correct_trades_taken.append(1)
+
+            if data[period]["close"] > data[period]["prediction"]:
+                differences.append(data[period]["close"]-data[period]["prediction"])
+            else:
+                differences.append(data[period]["prediction"]-data[period]["close"])
             
             if data[period]["predicted_direction_from_current"] == "Higher":
                 if (data[period]["prediction"] - data[period]["previous_close"]) > difference_to_trade:
@@ -57,6 +63,11 @@ if __name__ == "__main__":
             profit_percentage = len(could_have_taken_correct)/len(could_have_taken)*100
         else:
             profit_percentage = 0
+        
+        difference_average = 0
+        for i in differences:
+            difference_average = difference_average + i
+        difference_average = difference_average/len(differences)
 
-        print(f"Total number of correct predictions {len(correct_predictions)}/{len(total_predictions)} This is an overall accuracy of {prediction_percentage}%\nOut of this amount {len(trades_taken)} were taken and {len(correct_trades_taken)} of those were correct, this is an actual accuracy of {taken_percentage}%.\nOut of {len(total_predictions)} predictions, {len(could_have_taken)} trades could have been taken.\nOut of that amount, {len(could_have_taken_correct)} would have been profitable.\nThat is a possible profitability percentage of {profit_percentage}%")
+        print(f"Total number of correct predictions {len(correct_predictions)}/{len(total_predictions)} This is an overall accuracy of {prediction_percentage}%\nOut of this amount {len(trades_taken)} were taken and {len(correct_trades_taken)} of those were correct, this is an actual accuracy of {taken_percentage}%.\nOut of {len(total_predictions)} predictions, {len(could_have_taken)} trades could have been taken.\nOut of that amount, {len(could_have_taken_correct)} would have been profitable.\nThat is a possible profitability percentage of {profit_percentage}%\nThat is an average of only {difference_average} away from predicting on point.")
             
