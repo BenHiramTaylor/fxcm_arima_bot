@@ -64,7 +64,7 @@ if __name__ == "__main__":
     access_token = config["access_token"]
     account_id = config["account_id"]
     account_type = config["account_type"]
-    interval = "m5"
+    interval = config["interval"]
     ticker = config["ticker"]
     ticker_file = ticker.replace("/","")
     auto_trade = config["auto_trade"]
