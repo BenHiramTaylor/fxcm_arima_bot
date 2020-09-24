@@ -50,6 +50,10 @@ def load_full_df(ticker, interval):
     return df
 
 if __name__ == "__main__":
+     # TURN OFF ARIMA MODEL WARNINGS
+    warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',FutureWarning)
+    warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',FutureWarning)
+
     # CHECK IF APISettings.json IS PRESENT AND LOAD DEFAULT CONFIGS
     if not os.path.exists("APISettings.json"):
         raise Exception("APISettings.json not present, cannot read configs, please create APISettings.json")
@@ -71,11 +75,6 @@ if __name__ == "__main__":
     print("Generated Default configs and established a connection to FXCM.")
 
     while True:
-        # TURN OFF ARIMA MODEL WARNINGS
-        warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',
-                        FutureWarning)
-        warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',
-                        FutureWarning)
         # REFRESH AUTO_TRADE INCASE CHANGED
         with open("APISettings.json", "r") as f:
             config = json.load(f)
