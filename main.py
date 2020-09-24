@@ -8,6 +8,7 @@ from statsmodels.tsa.arima_model import ARIMA
 import warnings
 
 def get_trade_size(predicted_price, direction):
+    # TODO FINISH THE FUNCTION AND PLACE TRADES WITH A LIMIT PRICE AND A 2:1 RR
     accounts= con.get_accounts(kind="list")
     current_price = con.get_last_price(ticker)
     balance = None
@@ -254,6 +255,7 @@ if __name__ == "__main__":
                     print(f"Not initiating trade, position already open for ticker {ticker}.")
                     took_trade = False
                 else:
+                    # TODO PLACE TRADE LOGIC HERE WITH PLAN
                     trade_amount = get_trade_size(result, direction)
                     took_trade = True
             else:
