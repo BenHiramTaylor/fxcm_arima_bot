@@ -6,10 +6,6 @@ import pandas as pd
 import time
 from statsmodels.tsa.arima_model import ARIMA
 import warnings
-warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',
-                        FutureWarning)
-warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',
-                        FutureWarning)
 
 def get_trade_size(predicted_price, direction):
     accounts= con.get_accounts(kind="list")
@@ -74,6 +70,11 @@ if __name__ == "__main__":
     print("Generated Default configs and established a connection to FXCM.")
 
     while True:
+        # TURN OFF ARIMA MODEL WARNINGS
+        warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',
+                        FutureWarning)
+        warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',
+                        FutureWarning)
         # REFRESH AUTO_TRADE INCASE CHANGED
         with open("APISettings.json", "r") as f:
             config = json.load(f)
