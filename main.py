@@ -154,7 +154,7 @@ if __name__ == "__main__":
                 next_interval = None
                 continue
         
-        # REFRESH ALL OPEN POSITIONS
+        # REFRESH ALL OPEN POSITIONS AND KILL OLD ONES
         open_positions = KillOldTrades()
 
         # CREATE DF AND DUMP TO JSON
