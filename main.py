@@ -94,6 +94,8 @@ if __name__ == "__main__":
     interval_seconds = period_to_seconds[interval]
     con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
     print("Generated Default configs and established a connection to FXCM.")
+    # SET THE DEFAULT ACCOUNT USING THE ACCOUNT ID PROVIDED
+    con.set_default_account(account_id)
 
     while True:
         # REFRESH AUTO_TRADE INCASE CHANGED
