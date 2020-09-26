@@ -131,4 +131,8 @@ dmypy.json
 /Logs
 /JSON
 /Bot_Logs.txt
+<<<<<<< HEAD
 /tester.py
+=======
+.vscode
+>>>>>>> 0fa0500cffec4cb26a3aedaab6b3d975a294f0d7

@@ -13,11 +13,11 @@ def KillOldTrades():
     killed_positions = False
     # KILL OFF OLD TRADES IF STILL OPEN
     if next_interval:
-        five_periods_ago = next_interval - dt.timedelta(seconds=interval_seconds*6)
+        set_periods_ago = next_interval - dt.timedelta(seconds=interval_seconds*max_trade_open_time)
         if len(open_positions):
             for t in open_positions:
                 tradeTS = dt.datetime.fromtimestamp(t["time"])
-                if tradeTS < five_periods_ago:
+                if tradeTS < set_periods_ago:
                     print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than 5 intervals.")
                     con.close_trade(t["tradeId"])
                     killed_positions = True
@@ -87,6 +87,7 @@ if __name__ == "__main__":
     account_id = config["account_id"]
     account_type = config["account_type"]
     interval = config["interval"]
+    max_trade_open_time = config["max_trade_open_time"]
     ticker = config["ticker"]
     ticker_file = ticker.replace("/","")
     auto_trade = config["auto_trade"]
@@ -94,6 +95,8 @@ if __name__ == "__main__":
     interval_seconds = period_to_seconds[interval]
     con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
     print("Generated Default configs and established a connection to FXCM.")
+    # SET THE DEFAULT ACCOUNT USING THE ACCOUNT ID PROVIDED
+    con.set_default_account(account_id)
 
     while True:
         # REFRESH AUTO_TRADE INCASE CHANGED
