@@ -18,6 +18,7 @@ Once this repository has been cloned, there is some setup required before it can
    4. access_token: Your FXCM API Key.
    5. account_type: demo or live.
    6. account_id: The ID of the FXCM account you wish to trade.
+   7. max_trade_open_time: The max number of intervals a trade is allowed to be open for before it is force killed.
 3. There are two ways to run this bot: 
    1. Using the locally installed Python.
       - `pip install -r requirements.txt`
