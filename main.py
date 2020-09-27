@@ -295,15 +295,18 @@ if __name__ == "__main__":
         # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
         # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
         if auto_trade:
-            required_margin = spread + pip_difference
-            if required_margin >= trade_margin:
-                if ticker in open_positions:
-                    print(f"Not initiating trade, position already open for ticker {ticker}.")
-                    took_trade = False
-                else:
-                    # TODO PLACE TRADE LOGIC HERE WITH PLAN
-                    trade_amount = get_trade_size(result, direction)
-                    took_trade = True
+            if pip_difference >= spread:
+                # TAKE SPREAD AWAY TO GET VALUE OF PROFIT MARGIN IN PIPS
+                margin = pip_difference - spread
+                # CHECK IF THAT MARGIN IS ABOVE THE SPECIFIED TRADE MARGIN
+                if margin >= trade_margin:
+                    if ticker in open_positions:
+                        print(f"Not initiating trade, position already open for ticker {ticker}.")
+                        took_trade = False
+                    else:
+                        # TODO PLACE TRADE LOGIC HERE WITH PLAN
+                        trade_amount = get_trade_size(result, direction)
+                        took_trade = True
             else:
                 took_trade = False
                 print(f"Not initiating trade, predicted price difference was less than 5.")
