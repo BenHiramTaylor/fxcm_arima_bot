@@ -117,8 +117,10 @@ if __name__ == "__main__":
         if not con.is_subscribed(ticker):
             con.subscribe_market_data(ticker)
 
-        # TODO LOAD SPREAD FOR TICKER HERE
+        # TODO LOAD SPREAD FOR TICKER HERE GET CURRENT PRICE AND CALC PRICE PER PIP
         spread = None
+        current_price = None
+        price_per_pip = one_pip / current_price
 
         # LOAD LAST RUN TIMES, ADD TICKER DEFAULT TO 0
         if not os.path.exists(f"JSON\\LastRunTimes_{interval}.json"):
