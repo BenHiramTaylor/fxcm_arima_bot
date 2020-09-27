@@ -290,7 +290,7 @@ if __name__ == "__main__":
             pip_difference = pip_previous_close - pip_result
         
         # PRINT THE RESULTS FROM THE PREDICTION
-        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, price difference is {difference}.")
+        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {pip_difference}.")
 
         # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
         # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
@@ -307,6 +307,9 @@ if __name__ == "__main__":
                         # TODO PLACE TRADE LOGIC HERE WITH PLAN
                         trade_amount = get_trade_size(result, direction)
                         took_trade = True
+                else:
+                    print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {pip_difference}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
+                    took_trade = False
             else:
                 took_trade = False
                 print(f"Not initiating trade, predicted price difference was less than 5.")
