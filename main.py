@@ -81,8 +81,12 @@ if __name__ == "__main__":
         os.mkdir("JSON")
     with open("APISettings.json", "r") as f:
         config = json.load(f)
+
     # CREATE DEFAULT VARS
     period_to_seconds = {"m5":300,"m15":900,"H1":3600}
+    one_pip = 0.0001
+
+    # DEFAULT CONFIG LOAD
     access_token = config["access_token"]
     account_id = config["account_id"]
     account_type = config["account_type"]
@@ -91,22 +95,30 @@ if __name__ == "__main__":
     ticker = config["ticker"]
     ticker_file = ticker.replace("/","")
     auto_trade = config["auto_trade"]
+    trade_margin = config["trade_margin"]
     next_interval = None
     interval_seconds = period_to_seconds[interval]
+
+    # CONNECT TO FXCM
     con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
     print("Generated Default configs and established a connection to FXCM.")
     # SET THE DEFAULT ACCOUNT USING THE ACCOUNT ID PROVIDED
     con.set_default_account(account_id)
 
+    # BEGIN TRADING BOT LOOP
     while True:
         # REFRESH AUTO_TRADE INCASE CHANGED
         with open("APISettings.json", "r") as f:
             config = json.load(f)
         auto_trade = config["auto_trade"]
+        trade_margin = config["trade_margin"]
 
         # CHECK IF SUBSCRIBED TO TICKER STREAM AND SUBSCRIBE IF NOT
         if not con.is_subscribed(ticker):
             con.subscribe_market_data(ticker)
+
+        # TODO LOAD SPREAD FOR TICKER HERE
+        spread = None
 
         # LOAD LAST RUN TIMES, ADD TICKER DEFAULT TO 0
         if not os.path.exists(f"JSON\\LastRunTimes_{interval}.json"):
@@ -262,25 +274,29 @@ if __name__ == "__main__":
         model_fit = model.fit(disp=0)
         output = model_fit.forecast()
         result = output[0][0]
+
+        # CALCULATE VALUE IN PIPS
+        pip_result = result / one_pip
+        pip_previous_close = previous_close / one_pip
+
         # LOG PREDICTIONS BASED ON CURRENT PRICE
         if result > previous_close:
             direction = "Higher"
-            difference = result - previous_close
+            trade_type = "buy"
+            pip_difference = pip_result - pip_previous_close
         else:
             direction = "Lower"
-            difference = previous_close - result
+            trade_type = "sell"
+            pip_difference = pip_previous_close - pip_result
         
         # PRINT THE RESULTS FROM THE PREDICTION
         print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, price difference is {difference}.")
 
         # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
-        # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE
+        # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
         if auto_trade:
-            if difference >= 5:
-                if direction == "Lower":
-                    trade_type = "sell"
-                else:
-                    trade_type = "buy"
+            required_margin = spread + pip_difference
+            if required_margin >= trade_margin:
                 if ticker in open_positions:
                     print(f"Not initiating trade, position already open for ticker {ticker}.")
                     took_trade = False
