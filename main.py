@@ -33,11 +33,9 @@ def KillOldTrades():
                 new_open_positions.append(obj["currency"])
     return new_open_positions
 
-def calculate_lot_size(stop_pips):
-    # TODO CALCULATE THIS
+def calculate_lot_size(price_per_pip):
     # CALCULATE A 2:1 RR
     accounts= con.get_accounts(kind="list")
-    current_price = con.get_last_price(ticker)
     balance = None
     for i in accounts:
         if i["accountId"] == account_id:
@@ -47,7 +45,9 @@ def calculate_lot_size(stop_pips):
         con.close()
         exit(1)
     one_percent = balance / 100
-    price_per_pip = one_percent / stop_pips
+    one_lot_value = 100000*price_per_pip
+    lots = one_percent / one_lot_value
+    return int(lots)
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
@@ -311,9 +311,9 @@ if __name__ == "__main__":
                         print(f"Not initiating trade, position already open for ticker {ticker}.")
                         took_trade = False
                     else:
-                        # TODO PLACE TRADE LOGIC HERE WITH PLAN
+                        # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
                         stop_pips = limit/2
-                        lot_size = calculate_lot_size()
+                        lot_size = calculate_lot_size(price_per_pip)
                         con.open_trade(
                             symbol=ticker,
                             isbuy=isbuy,
