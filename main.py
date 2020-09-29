@@ -298,7 +298,7 @@ if __name__ == "__main__":
             limit = pip_previous_close - pip_result
         
         # PRINT THE RESULTS FROM THE PREDICTION
-        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit} with spread.")
+        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit} with a spread of {spread}.")
 
         # SKIP TRADING ON FIRST RUN OF LOOP
         if firstRun:
