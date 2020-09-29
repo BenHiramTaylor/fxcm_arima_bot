@@ -33,8 +33,9 @@ def KillOldTrades():
                 new_open_positions.append(obj["currency"])
     return new_open_positions
 
-def get_trade_size(predicted_price, direction):
-    # TODO FINISH THE FUNCTION AND PLACE TRADES WITH A LIMIT PRICE AND A 2:1 RR
+def calculate_lot_size(stop_pips):
+    # TODO CALCULATE THIS
+    # CALCULATE A 2:1 RR
     accounts= con.get_accounts(kind="list")
     current_price = con.get_last_price(ticker)
     balance = None
@@ -46,12 +47,7 @@ def get_trade_size(predicted_price, direction):
         con.close()
         exit(1)
     one_percent = balance / 100
-    if direction == "Higher":
-        difference = predicted_price - current_price
-        stop = current_price - (difference/2)
-    else:
-        difference = current_price - predicted_price
-        stop = current_price + (difference/2)
+    price_per_pip = one_percent / stop_pips
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
@@ -293,22 +289,22 @@ if __name__ == "__main__":
         # LOG PREDICTIONS BASED ON CURRENT PRICE
         if result > previous_close:
             direction = "Higher"
-            trade_type = "buy"
-            pip_difference = pip_result - pip_previous_close
+            isbuy = True
+            limit = pip_result - pip_previous_close
         else:
             direction = "Lower"
-            trade_type = "sell"
-            pip_difference = pip_previous_close - pip_result
+            isbuy = False
+            limit = pip_previous_close - pip_result
         
         # PRINT THE RESULTS FROM THE PREDICTION
-        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {pip_difference}.")
+        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit}.")
 
         # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
         # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
         if auto_trade:
-            if pip_difference >= spread:
+            if limit >= spread:
                 # TAKE SPREAD AWAY TO GET VALUE OF PROFIT MARGIN IN PIPS
-                margin = pip_difference - spread
+                margin = limit - spread
                 # CHECK IF THAT MARGIN IS ABOVE THE SPECIFIED TRADE MARGIN
                 if margin >= trade_margin:
                     if ticker in open_positions:
@@ -316,10 +312,21 @@ if __name__ == "__main__":
                         took_trade = False
                     else:
                         # TODO PLACE TRADE LOGIC HERE WITH PLAN
-                        trade_amount = get_trade_size(result, direction)
+                        stop_pips = limit/2
+                        lot_size = calculate_lot_size()
+                        con.open_trade(
+                            symbol=ticker,
+                            isbuy=isbuy,
+                            order_type="AtMarket",
+                            is_in_pips=True,
+                            trailing_step=stop_pips/10,
+                            limit=limit,
+                            stop=stop_pips,
+                            amount=lot_size
+                        )
                         took_trade = True
                 else:
-                    print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {pip_difference}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
+                    print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {limit}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
                     took_trade = False
             else:
                 took_trade = False
