@@ -175,9 +175,9 @@ if __name__ == "__main__":
                 continue
         elif today.today().weekday() == 5:
             if today.hour == 20:
-                print("Markets closing in one hour for the weekend!, closing all trades, see you in 180000 seconds!")
+                print("Markets closing in one hour for the weekend!, closing all trades, see you in 187200 seconds!")
                 con.close_all()
-                time.sleep(180000)
+                time.sleep(187200)
                 next_interval = None
                 continue
         
