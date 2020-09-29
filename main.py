@@ -300,48 +300,50 @@ if __name__ == "__main__":
         # PRINT THE RESULTS FROM THE PREDICTION
         print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit}.")
 
+        # SKIP TRADING ON FIRST RUN OF LOOP
+        if firstRun:
+            print("First run of loop, skipping trade.")
+            firstRun = False
+            continue
         # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
         # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
-        if not firstRun:
-            if auto_trade:
-                if limit >= spread:
-                    # TAKE SPREAD AWAY TO GET VALUE OF PROFIT MARGIN IN PIPS
-                    margin = limit - spread
-                    # CHECK IF THAT MARGIN IS ABOVE THE SPECIFIED TRADE MARGIN
-                    if margin >= trade_margin:
-                        if ticker in open_positions:
-                            print(f"Not initiating trade, position already open for ticker {ticker}.")
-                            took_trade = False
-                        else:
-                            # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
-                            stop_pips = limit/2
-                            lot_size = calculate_lot_size(price_per_pip)
-                            con.open_trade(
-                                symbol=ticker,
-                                isbuy=isbuy,
-                                order_type="AtMarket",
-                                is_in_pips=True,
-                                trailing_step=stop_pips/10,
-                                limit=limit,
-                                stop=stop_pips,
-                                amount=lot_size
-                            )
-                            took_trade = True
-                    else:
-                        print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {limit}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
+        if auto_trade:
+            if limit >= spread:
+                # TAKE SPREAD AWAY TO GET VALUE OF PROFIT MARGIN IN PIPS
+                margin = limit - spread
+                # CHECK IF THAT MARGIN IS ABOVE THE SPECIFIED TRADE MARGIN
+                if margin >= trade_margin:
+                    if ticker in open_positions:
+                        print(f"Not initiating trade, position already open for ticker {ticker}.")
                         took_trade = False
+                    else:
+                        # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
+                        stop_pips = limit/2
+                        lot_size = calculate_lot_size(price_per_pip)
+                        con.open_trade(
+                            symbol=ticker,
+                            isbuy=isbuy,
+                            order_type="AtMarket",
+                            is_in_pips=True,
+                            trailing_step=stop_pips/10,
+                            limit=limit,
+                            stop=stop_pips,
+                            amount=lot_size
+                        )
+                        took_trade = True
                 else:
+                    print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {limit}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
                     took_trade = False
-                    print(f"Not initiating trade, predicted price difference was less than 5.")
             else:
                 took_trade = False
-                print("Not Trading, AutoTrade is set to False, to change this, please set AutoTrade to true in APISettings.json")
+                print(f"Not initiating trade, predicted price difference was less than 5.")
+        else:
+            took_trade = False
+            print("Not Trading, AutoTrade is set to False, to change this, please set AutoTrade to true in APISettings.json")
         
         # UPDATE JSON DICT WITH NEW PREDICTION DATA AND DUMP IT
         trade_log[dt.datetime.strftime(current_interval,"%Y-%m-%d %H:%M:%S")] = {"close":None,"prediction":result,"predicted_direction_from_current":direction,"previous_close":previous_close,"correct_prediction":None,"took_trade":took_trade}
 
         with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
             json.dump(trade_log,f,indent=2,sort_keys=True)
-
-        if firstRun:
-            firstRun = False        
+    
