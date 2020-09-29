@@ -8,6 +8,7 @@ from statsmodels.tsa.arima_model import ARIMA
 import warnings
 
 def KillOldTrades():
+    new_open_positions = list()
     # REFRESH ALL OPEN POSITIONS
     open_positions = con.get_open_positions(kind="list")
     killed_positions = False
@@ -18,14 +19,19 @@ def KillOldTrades():
             for t in open_positions:
                 tradeTS = dt.datetime.fromtimestamp(t["time"])
                 if tradeTS < set_periods_ago:
-                    print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than 5 intervals.")
+                    print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than the specified intervals.")
                     con.close_trade(t["tradeId"])
                     killed_positions = True
     
     # REFRESH POSITIONS IF KILLED TRADES
     if killed_positions:
         open_positions = con.get_open_positions(kind="list")
-    return open_positions
+    
+    if len(open_positions):
+        for obj in open_positions:
+            if obj["currency"] not in new_open_positions:
+                new_open_positions.append(obj["currency"])
+    return new_open_positions
 
 def get_trade_size(predicted_price, direction):
     # TODO FINISH THE FUNCTION AND PLACE TRADES WITH A LIMIT PRICE AND A 2:1 RR
