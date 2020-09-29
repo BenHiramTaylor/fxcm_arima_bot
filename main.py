@@ -110,24 +110,6 @@ if __name__ == "__main__":
 
     # BEGIN TRADING BOT LOOP
     while True:
-        # REFRESH AUTO_TRADE INCASE CHANGED
-        with open("APISettings.json", "r") as f:
-            config = json.load(f)
-        auto_trade = config["auto_trade"]
-        trade_margin = config["trade_margin"]
-
-        # CHECK IF SUBSCRIBED TO TICKER STREAM AND SUBSCRIBE IF NOT
-        if not con.is_subscribed(ticker):
-            con.subscribe_market_data(ticker)
-
-        # LOAD SPREAD FOR TICKER HERE GET CURRENT PRICE AND CALC PRICE PER PIP
-        spread_df = con.get_offers()
-        spread_df.set_index("currency", inplace=True)
-        spread = spread_df.loc[ticker,:]["spread"].item()
-        current_buy_price = spread_df.loc[ticker,:]["buy"].item()
-        current_sell_price = spread_df.loc[ticker,:]["sell"].item()
-        price_per_pip = spread_df.loc[ticker,:]["pipCost"].item()
-
         # LOAD LAST RUN TIMES, ADD TICKER DEFAULT TO 0
         if not os.path.exists(f"JSON\\LastRunTimes_{interval}.json"):
             with open(f"JSON\\LastRunTimes_{interval}.json","w") as f:
@@ -178,6 +160,24 @@ if __name__ == "__main__":
                 next_interval = None
                 continue
         
+        # REFRESH AUTO_TRADE INCASE CHANGED
+        with open("APISettings.json", "r") as f:
+            config = json.load(f)
+        auto_trade = config["auto_trade"]
+        trade_margin = config["trade_margin"]
+
+        # CHECK IF SUBSCRIBED TO TICKER STREAM AND SUBSCRIBE IF NOT
+        if not con.is_subscribed(ticker):
+            con.subscribe_market_data(ticker)
+
+        # LOAD SPREAD FOR TICKER HERE GET CURRENT PRICE AND CALC PRICE PER PIP
+        spread_df = con.get_offers()
+        spread_df.set_index("currency", inplace=True)
+        spread = spread_df.loc[ticker,:]["spread"].item()
+        current_buy_price = spread_df.loc[ticker,:]["buy"].item()
+        current_sell_price = spread_df.loc[ticker,:]["sell"].item()
+        price_per_pip = spread_df.loc[ticker,:]["pipCost"].item()
+
         # REFRESH ALL OPEN POSITIONS AND KILL OLD ONES
         open_positions = KillOldTrades()
 
