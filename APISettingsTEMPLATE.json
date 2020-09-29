@@ -1,7 +1,7 @@
 {
     "access_token":"",
     "account_type":"demo",
-    "account_id":"",
+    "account_id":825832,
     "ticker":"USDT_BTC",
     "interval":"m5",
     "auto_trade":false,
