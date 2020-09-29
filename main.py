@@ -13,15 +13,15 @@ def KillOldTrades():
     open_positions = con.get_open_positions(kind="list")
     killed_positions = False
     # KILL OFF OLD TRADES IF STILL OPEN
-    if next_interval:
-        set_periods_ago = next_interval - dt.timedelta(seconds=interval_seconds*max_trade_open_time)
-        if len(open_positions):
-            for t in open_positions:
-                tradeTS = dt.datetime.fromtimestamp(t["time"])
-                if tradeTS < set_periods_ago:
-                    print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than the specified intervals.")
-                    con.close_trade(t["tradeId"])
-                    killed_positions = True
+    # if next_interval:
+    #     set_periods_ago = next_interval - dt.timedelta(seconds=interval_seconds*max_trade_open_time)
+    #     if len(open_positions):
+    #         for t in open_positions:
+    #             tradeTS = dt.datetime.fromtimestamp(t["time"])
+    #             if tradeTS < set_periods_ago:
+    #                 print(f"Killing trade with ID: {t['tradeId']}, it has been open for more than the specified intervals.")
+    #                 con.close_trade(t["tradeId"])
+    #                 killed_positions = True
     
     # REFRESH POSITIONS IF KILLED TRADES
     if killed_positions:
