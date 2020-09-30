@@ -339,7 +339,7 @@ if __name__ == "__main__":
                     took_trade = False
             else:
                 took_trade = False
-                print(f"Not initiating trade, predicted price difference was less than 5.")
+                print(f"Not initiating trade, predicted price difference was less than {trade_margin}.")
         else:
             took_trade = False
             print("Not Trading, AutoTrade is set to False, to change this, please set AutoTrade to true in APISettings.json")
