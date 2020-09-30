@@ -324,7 +324,7 @@ if __name__ == "__main__":
                         lot_size = calculate_lot_size(price_per_pip)
                         con.open_trade(
                             symbol=ticker,
-                            isbuy=isbuy,
+                            is_buy=isbuy,
                             order_type="AtMarket",
                             is_in_pips=True,
                             trailing_step=stop_pips/10,
