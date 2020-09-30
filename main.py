@@ -323,6 +323,7 @@ if __name__ == "__main__":
                         # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
                         stop_pips = limit/2
                         lot_size = calculate_lot_size(price_per_pip)
+                        print(f"LOTS: {lot_size}")
                         con.open_trade(
                             symbol=ticker,
                             is_buy=isbuy,
