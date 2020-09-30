@@ -38,7 +38,7 @@ def calculate_lot_size(price_per_pip):
     accounts= con.get_accounts(kind="list")
     balance = None
     for i in accounts:
-        if i["accountId"] == account_id:
+        if int(i["accountId"]) == account_id:
             balance = i["balance"]
     if not balance:
         print(f"Account with ID {account_id} not found in con.get_accounts.")
