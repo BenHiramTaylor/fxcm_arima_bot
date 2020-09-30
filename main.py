@@ -110,6 +110,9 @@ if __name__ == "__main__":
 
     # BEGIN TRADING BOT LOOP
     while True:
+        # RELOAD CONNECTION
+        if not con.is_connected():
+            con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
         # LOAD LAST RUN TIMES, ADD TICKER DEFAULT TO 0
         if not os.path.exists(f"JSON\\LastRunTimes_{interval}.json"):
             with open(f"JSON\\LastRunTimes_{interval}.json","w") as f:
