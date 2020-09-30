@@ -47,7 +47,8 @@ def calculate_lot_size(price_per_pip):
     one_percent = balance / 100
     one_lot_value = 100000*price_per_pip
     lots = one_percent / one_lot_value
-    return int(lots)
+    print(f"One percent of your account is {one_percent}, this is equal to {lots} lots at a value of {one_lot_value} per lot.")
+    return lots
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
@@ -325,14 +326,15 @@ if __name__ == "__main__":
                             symbol=ticker,
                             is_buy=isbuy,
                             order_type="AtMarket",
-                            is_in_pips=True,
                             trailing_step=stop_pips/10,
                             limit=limit,
                             stop=stop_pips,
                             amount=lot_size,
-                            time_in_force="IOC"
+                            time_in_force="IOC",
+                            account_id= account_id
                         )
                         took_trade = True
+                        print("Trade Placed.")
                 else:
                     print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {limit}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
                     took_trade = False
