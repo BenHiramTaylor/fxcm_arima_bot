@@ -322,12 +322,14 @@ if __name__ == "__main__":
                     else:
                         # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
                         stop_pips = limit/2
+                        trailing_step = stop_pips/10
+                        stop_pips = 0 - stop_pips
                         lot_size = calculate_lot_size(price_per_pip)
                         con.open_trade(
                             symbol=ticker,
                             is_buy=isbuy,
                             order_type="AtMarket",
-                            trailing_step=stop_pips/10,
+                            trailing_step=trailing_step,
                             limit=limit,
                             stop=stop_pips,
                             amount=lot_size,
