@@ -331,7 +331,8 @@ if __name__ == "__main__":
                             trailing_step=stop_pips/10,
                             limit=limit,
                             stop=stop_pips,
-                            amount=lot_size
+                            amount=lot_size,
+                            time_in_force="IOC"
                         )
                         took_trade = True
                 else:
