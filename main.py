@@ -136,6 +136,7 @@ if __name__ == "__main__":
             next_interval = next_interval + dt.timedelta(seconds=30)
             next_interval_sleep = next_interval.timestamp()-dt.datetime.now(tz=dt.timezone.utc).timestamp()
             if next_interval_sleep > 0:
+                firstRun = False
                 next_interval_string = dt.datetime.strftime(next_interval,"%Y-%m-%d %H:%M:%S%z")
                 print(f"We have the next interval, sleeping until then. See you in {next_interval_sleep} seconds at {next_interval_string}")
                 time.sleep(next_interval_sleep)
