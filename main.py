@@ -337,7 +337,7 @@ if __name__ == "__main__":
                         took_trade = True
                         print("Trade Placed.")
                 else:
-                    print(f"Margin is too low, no profit after removing spread, spread is {spread}, pip difference is {limit}, which makes the margin {margin}, which is lower than the specified {trade_margin}.")
+                    print(f"Margin is too low, no profit after removing spread, the margin is {margin}, which is lower than the specified {trade_margin}.")
                     took_trade = False
             else:
                 took_trade = False
