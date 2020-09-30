@@ -7,10 +7,6 @@ import time
 from statsmodels.tsa.arima_model import ARIMA
 import warnings
 
-# TURN OFF ARIMA MODEL WARNINGS
-warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',FutureWarning)
-warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',FutureWarning)
-
 def KillOldTrades():
     new_open_positions = list()
     # REFRESH ALL OPEN POSITIONS
@@ -110,6 +106,8 @@ if __name__ == "__main__":
 
     # BEGIN TRADING BOT LOOP
     while True:
+        # TURN OFF ARIMA MODEL WARNINGS
+        warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',FutureWarning)
         # RELOAD CONNECTION
         if not con.is_connected():
             con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
