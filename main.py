@@ -33,7 +33,7 @@ def KillOldTrades():
                 new_open_positions.append(obj["currency"])
     return new_open_positions
 
-def calculate_lot_size(price_per_pip):
+def calculate_lot_size(one_micro_lot_value):
     # CALCULATE A 2:1 RR
     accounts= con.get_accounts(kind="list")
     balance = None
@@ -45,7 +45,7 @@ def calculate_lot_size(price_per_pip):
         con.close()
         exit(1)
     one_percent = balance / 100
-    one_lot_value = 100*price_per_pip
+    one_lot_value = 100 * one_micro_lot_value
     lots = one_percent / one_lot_value
     print(f"One percent of your account is {one_percent}, this is equal to {lots} lots at a value of {one_lot_value} per lot.")
     return lots
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         spread = spread_df.loc[ticker,:]["spread"].item()
         current_buy_price = spread_df.loc[ticker,:]["buy"].item()
         current_sell_price = spread_df.loc[ticker,:]["sell"].item()
-        price_per_pip = spread_df.loc[ticker,:]["pipCost"].item()
+        one_micro_lot_value = spread_df.loc[ticker,:]["pipCost"].item()
 
         # REFRESH ALL OPEN POSITIONS AND KILL OLD ONES
         open_positions = KillOldTrades()
@@ -324,7 +324,7 @@ if __name__ == "__main__":
                         stop_pips = limit/2
                         trailing_step = stop_pips/10
                         stop_pips = 0 - stop_pips
-                        lot_size = calculate_lot_size(price_per_pip)
+                        lot_size = calculate_lot_size(one_micro_lot_value)
                         con.open_trade(
                             symbol=ticker,
                             is_buy=isbuy,
