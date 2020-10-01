@@ -75,6 +75,8 @@ def load_full_df(ticker, interval):
     return df
 
 if __name__ == "__main__":
+    # TURN OFF ARIMA MODEL WARNINGS
+    warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',FutureWarning)
     # CHECK IF APISettings.json IS PRESENT AND LOAD DEFAULT CONFIGS
     if not os.path.exists("APISettings.json"):
         raise Exception("APISettings.json not present, cannot read configs, please create APISettings.json")
@@ -109,8 +111,6 @@ if __name__ == "__main__":
 
     # BEGIN TRADING BOT LOOP
     while True:
-        # TURN OFF ARIMA MODEL WARNINGS
-        warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARIMA',FutureWarning)
         # RELOAD CONNECTION
         if not con.is_connected():
             con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
