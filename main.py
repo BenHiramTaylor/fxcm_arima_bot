@@ -45,7 +45,7 @@ def calculate_lot_size():
         con.close()
         exit(1)
     one_percent = balance / 100
-    last_price = con.get_last_price(ticker)["Bid"].item()
+    last_price = con.get_last_price(ticker)["Ask"].item()
     price_per_pip = one_pip / last_price
     one_lot_value = 10000 * price_per_pip
     lots = one_percent / one_lot_value
