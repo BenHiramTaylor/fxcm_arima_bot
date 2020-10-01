@@ -44,7 +44,7 @@ def calculate_lot_size(stop_pips):
         print(f"Account with ID {account_id} not found in con.get_accounts.")
         con.close()
         exit(1)
-    one_percent = balance / 100
+    one_percent = balance * 0.0075
     last_price = con.get_last_price(ticker)["Ask"].item()
     standard_lot = (0.0001 / last_price) * 100000
     lot_size = (one_percent / stop_pips) / standard_lot
@@ -135,7 +135,7 @@ if __name__ == "__main__":
                 next_interval = last_run_dt + dt.timedelta(seconds=interval_seconds)
                 continue
         else:
-            next_interval = next_interval + dt.timedelta(seconds=30)
+            next_interval = next_interval - dt.timedelta(seconds=1)
             next_interval_sleep = next_interval.timestamp()-dt.datetime.now(tz=dt.timezone.utc).timestamp()
             if next_interval_sleep > 0:
                 firstRun = False
@@ -197,13 +197,89 @@ if __name__ == "__main__":
             with open(f"JSON\\{ticker_file}_{interval}_price_log.json","w")as f:
                 json.dump(new_json_data,f,indent=2,sort_keys=True)
             # GET PREVIOUS CLOSE FOR HIGHER/LOWER CHECKS
-            previous_close = df.tail(2).head(1)['close'].item()
             current_interval = dt.datetime.strptime(df.tail(1).index.item(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=dt.timezone.utc)
             next_interval =  current_interval + dt.timedelta(seconds=interval_seconds)
+            x = df["close"].values
+            x = x[-10000:]    
+
+        # TRAIN THE DATA TO GET PREDICTIONS
+        last_price = con.get_last_price(ticker)["Ask"].item()
+        x.append(last_price)
+        model = ARIMA(x, order=(5,1,0))
+        model_fit = model.fit(disp=0)
+        output = model_fit.forecast()
+        result = output[0][0]
+
+        # CALCULATE VALUE IN PIPS
+        pip_result = result / one_pip
+        pip_previous_close = last_price / one_pip
+
+        # LOG PREDICTIONS BASED ON CURRENT PRICE
+        if result > last_price:
+            direction = "Higher"
+            isbuy = True
+            limit = pip_result - pip_previous_close
         else:
-            print("Loading existing DataFrame and updating with new records.")
-            df = pd.read_json(f"JSON\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
-            df.index.name = "date"
+            direction = "Lower"
+            isbuy = False
+            limit = pip_previous_close - pip_result
+        
+        # PRINT THE RESULTS FROM THE PREDICTION
+        print(f"Predictions have predicted the price being {direction} than the previous close of: {last_price} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit} with a spread of {spread}.")
+
+        # SKIP TRADING ON FIRST RUN OF LOOP
+        if firstRun:
+            print("First run of loop, skipping trade.")
+            firstRun = False
+        else:
+            # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
+            # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
+            if auto_trade:
+                if limit >= spread:
+                    # TAKE SPREAD AWAY TO GET VALUE OF PROFIT MARGIN IN PIPS
+                    margin = limit - spread
+                    # CHECK IF THAT MARGIN IS ABOVE THE SPECIFIED TRADE MARGIN
+                    if margin >= trade_margin:
+                        if ticker in open_positions:
+                            print(f"Not initiating trade, position already open for ticker {ticker}.")
+                            took_trade = False
+                        else:
+                            # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
+                            stop_pips = limit/2
+                            lot_size = calculate_lot_size(stop_pips)
+                            trailing_step = stop_pips
+                            stop_pips = 0 - stop_pips
+                            con.open_trade(
+                                symbol=ticker,
+                                is_buy=isbuy,
+                                order_type="AtMarket",
+                                limit=limit,
+                                stop=stop_pips,
+                                amount=lot_size,
+                                time_in_force="IOC",
+                                account_id= account_id
+                            )
+                            took_trade = True
+                            print("Trade Placed.")
+                    else:
+                        print(f"Margin is too low, no profit after removing spread, the margin is {margin}, which is lower than the specified {trade_margin}.")
+                        took_trade = False
+                else:
+                    took_trade = False
+                    print(f"Not initiating trade, predicted price difference was less than {trade_margin}.")
+            else:
+                took_trade = False
+                print("Not Trading, AutoTrade is set to False, to change this, please set AutoTrade to true in APISettings.json")
+            
+            # OPEN TRADE LOG TO LOG LAST TRADE
+            with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","r") as f:
+                trade_log = json.load(f)
+            
+            # UPDATE JSON DICT WITH NEW PREDICTION DATA AND DUMP IT
+            trade_log[dt.datetime.strftime(next_interval,"%Y-%m-%d %H:%M:%S")] = {"close":None,"prediction":result,"predicted_direction_from_current":direction,"previous_close":last_price,"correct_prediction":None,"took_trade":took_trade}
+
+            with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
+                json.dump(trade_log,f,indent=2,sort_keys=True)
 
         while True:
             # GET UPDATED DF
@@ -221,6 +297,10 @@ if __name__ == "__main__":
                 print_current_interval = dt.datetime.strftime(current_interval, "%Y-%m-%d %H:%M:%S")
                 print(f"Current interval received was {print_current_interval}, which should be wrong, sleeping for 5 seconds and reloading DataFrame")
                 time.sleep(5)
+            
+        print("Loading existing DataFrame and updating with new records.")
+        df = pd.read_json(f"JSON\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
+        df.index.name = "date"
         
         df = df.append(new_df)
         df = df.reset_index().drop_duplicates(subset='date', keep='first').set_index('date')
@@ -279,79 +359,7 @@ if __name__ == "__main__":
         if update_count > 0:
             print(f"Updated JSON Trade Log with {update_count} new records.")
 
-        # TRAIN THE DATA TO GET PREDICTIONS
+        # REMAKE X
         x = new_df["close"].values
-
-        model = ARIMA(x, order=(5,1,0))
-        model_fit = model.fit(disp=0)
-        output = model_fit.forecast()
-        result = output[0][0]
-
-        # CALCULATE VALUE IN PIPS
-        pip_result = result / one_pip
-        pip_previous_close = previous_close / one_pip
-
-        # LOG PREDICTIONS BASED ON CURRENT PRICE
-        if result > previous_close:
-            direction = "Higher"
-            isbuy = True
-            limit = pip_result - pip_previous_close
-        else:
-            direction = "Lower"
-            isbuy = False
-            limit = pip_previous_close - pip_result
-        
-        # PRINT THE RESULTS FROM THE PREDICTION
-        print(f"Predictions have predicted the price being {direction} than the previous close of: {previous_close} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit} with a spread of {spread}.")
-
-        # SKIP TRADING ON FIRST RUN OF LOOP
-        if firstRun:
-            print("First run of loop, skipping trade.")
-            firstRun = False
-            continue
-        # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
-        # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
-        if auto_trade:
-            if limit >= spread:
-                # TAKE SPREAD AWAY TO GET VALUE OF PROFIT MARGIN IN PIPS
-                margin = limit - spread
-                # CHECK IF THAT MARGIN IS ABOVE THE SPECIFIED TRADE MARGIN
-                if margin >= trade_margin:
-                    if ticker in open_positions:
-                        print(f"Not initiating trade, position already open for ticker {ticker}.")
-                        took_trade = False
-                    else:
-                        # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
-                        stop_pips = limit/2
-                        lot_size = calculate_lot_size(stop_pips)
-                        trailing_step = stop_pips
-                        stop_pips = 0 - stop_pips
-                        con.open_trade(
-                            symbol=ticker,
-                            is_buy=isbuy,
-                            order_type="AtMarket",
-                            limit=limit,
-                            stop=stop_pips,
-                            amount=lot_size,
-                            time_in_force="IOC",
-                            account_id= account_id
-                        )
-                        took_trade = True
-                        print("Trade Placed.")
-                else:
-                    print(f"Margin is too low, no profit after removing spread, the margin is {margin}, which is lower than the specified {trade_margin}.")
-                    took_trade = False
-            else:
-                took_trade = False
-                print(f"Not initiating trade, predicted price difference was less than {trade_margin}.")
-        else:
-            took_trade = False
-            print("Not Trading, AutoTrade is set to False, to change this, please set AutoTrade to true in APISettings.json")
-        
-        # UPDATE JSON DICT WITH NEW PREDICTION DATA AND DUMP IT
-        trade_log[dt.datetime.strftime(current_interval,"%Y-%m-%d %H:%M:%S")] = {"close":None,"prediction":result,"predicted_direction_from_current":direction,"previous_close":previous_close,"correct_prediction":None,"took_trade":took_trade}
-
-        with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
-            json.dump(trade_log,f,indent=2,sort_keys=True)
         print("\n")
     
