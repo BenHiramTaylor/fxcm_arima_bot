@@ -47,10 +47,10 @@ def calculate_lot_size():
     one_percent = balance / 100
     last_price = con.get_last_price(ticker)["Ask"].item()
     price_per_pip = 0.0001 / last_price
-    total_units = one_percent / price_per_pip
-    lots = total_units / 10000
-    print(f"One percent of your account is {one_percent}, this is equal to {lots} lots (1000 units) at a value of {price_per_pip} per 1 units.")
-    return lots
+    one_standard_lot_value = price_per_pip * 100000 
+    standard_lots = one_percent / one_standard_lot_value
+    lots = standard_lots * 100
+    print(f"One percent of your account is {one_percent}, this is equal to {lots} micro lots (1000 units) at a value of {one_standard_lot_value} per standard lot.")
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
