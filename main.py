@@ -329,7 +329,6 @@ if __name__ == "__main__":
                             symbol=ticker,
                             is_buy=isbuy,
                             order_type="AtMarket",
-                            trailing_step=trailing_step,
                             limit=limit,
                             stop=stop_pips,
                             amount=lot_size,
