@@ -201,6 +201,11 @@ if __name__ == "__main__":
             next_interval =  current_interval + dt.timedelta(seconds=interval_seconds)
             x = df["close"].values
             x = x[-10000:]
+        else:
+            df = pd.read_json(f"JSON\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
+            df.index.name = "date"
+            x = df["close"].values
+            x = x[-10000:]
         
         if not firstRun:
             # TRAIN THE DATA TO GET PREDICTIONS
