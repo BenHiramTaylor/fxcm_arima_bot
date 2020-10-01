@@ -322,7 +322,7 @@ if __name__ == "__main__":
                     else:
                         # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
                         stop_pips = limit/2
-                        trailing_step = stop_pips/10
+                        trailing_step = stop_pips
                         stop_pips = 0 - stop_pips
                         lot_size = calculate_lot_size(one_micro_lot_value)
                         con.open_trade(
