@@ -364,6 +364,10 @@ if __name__ == "__main__":
 
         if update_count > 0:
             print(f"Updated JSON Trade Log with {update_count} new records.")
+        
+        # DUMP TRADE LOG
+        with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
+            json.dump(trade_log,f,indent=2,sort_keys=True)
 
         # REMAKE X
         x = new_df["close"].values
