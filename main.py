@@ -210,7 +210,9 @@ if __name__ == "__main__":
         if not firstRun:
             # TRAIN THE DATA TO GET PREDICTIONS
             last_price = con.get_last_price(ticker)["Ask"].item()
+            x = x.tolist()
             x.append(last_price)
+            x = x[-10000:]
             model = ARIMA(x, order=(5,1,0))
             model_fit = model.fit(disp=0)
             output = model_fit.forecast()
