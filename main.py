@@ -45,7 +45,7 @@ def calculate_lot_size(one_micro_lot_value):
         con.close()
         exit(1)
     one_percent = balance / 100
-    one_lot_value = 100 * one_micro_lot_value
+    one_lot_value = 1000 * one_micro_lot_value
     lots = one_percent / one_lot_value
     print(f"One percent of your account is {one_percent}, this is equal to {lots} lots at a value of {one_lot_value} per lot.")
     return lots
