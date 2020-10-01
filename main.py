@@ -305,7 +305,7 @@ if __name__ == "__main__":
                 print_current_interval = dt.datetime.strftime(current_interval, "%Y-%m-%d %H:%M:%S")
                 time.sleep(5)
             
-        print("Loading existing DataFrame and updating with new records.")
+        print("Loaded new DataFrame and updating with JSON new records.")
         df = pd.read_json(f"JSON\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
         df.index.name = "date"
         
@@ -330,8 +330,8 @@ if __name__ == "__main__":
             with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w") as f:
                 json.dump({},f)
         with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","r") as f:
-            trade_log = json.load(f)        
-        
+            trade_log = json.load(f)
+      
         # UPDATE ALL LOG RECORDS WITH THE ACTUAL CLOSE, IF MISSING, CHECK IF PAST PREDICTIONS ARE CORRECT
         update_count = 0
         for date in trade_log:
@@ -362,6 +362,21 @@ if __name__ == "__main__":
                 else:
                     trade_log[date]["correct_prediction"] = False
 
+        # LOAD TEMP DF FOR PREVIOUS CLOSES AND UPDATE THEM 
+        previous_close_df = pd.read_json(f"JSON\\{ticker_file}_{interval}_trade_log.json", orient="index", convert_dates=False)
+        previous_close_df.index.name = "date"
+        previous_close_df.drop(columns=["correct_prediction","predicted_direction_from_current","prediction","took_trade"],inplace=True)
+        previous_close_df["previous_close"] = previous_close_df["close"].shift(1)
+        previous_close_df.drop(columns=["close"],inplace=True)
+        previous_close_df.dropna(inplace=True)
+        previous_close_df.index = previous_close_df.index.astype(str)
+        previous_close_json_string = previous_close_df.to_json(orient="index")
+        previous_close_json = json.loads(previous_close_json_string)
+        for date in previous_close_json:
+            if date in trade_log:
+                if previous_close_json[date]["previous_close"] != trade_log[date]["previous_close"]:
+                    trade_log[date]["previous_close"] = previous_close_json[date]["previous_close"]
+                    update_count += 1
 
         if update_count > 0:
             print(f"Updated JSON Trade Log with {update_count} new records.")
@@ -369,6 +384,9 @@ if __name__ == "__main__":
         # DUMP TRADE LOG
         with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
             json.dump(trade_log,f,indent=2,sort_keys=True)
+        
+        previous_close_df = pd.read_json(f"JSON\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
+        previous_close_df.index.name = "date"
 
         # REMAKE X
         x = new_df["close"].values
