@@ -200,38 +200,34 @@ if __name__ == "__main__":
             current_interval = dt.datetime.strptime(df.tail(1).index.item(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=dt.timezone.utc)
             next_interval =  current_interval + dt.timedelta(seconds=interval_seconds)
             x = df["close"].values
-            x = x[-10000:]    
-
-        # TRAIN THE DATA TO GET PREDICTIONS
-        last_price = con.get_last_price(ticker)["Ask"].item()
-        x.append(last_price)
-        model = ARIMA(x, order=(5,1,0))
-        model_fit = model.fit(disp=0)
-        output = model_fit.forecast()
-        result = output[0][0]
-
-        # CALCULATE VALUE IN PIPS
-        pip_result = result / one_pip
-        pip_previous_close = last_price / one_pip
-
-        # LOG PREDICTIONS BASED ON CURRENT PRICE
-        if result > last_price:
-            direction = "Higher"
-            isbuy = True
-            limit = pip_result - pip_previous_close
-        else:
-            direction = "Lower"
-            isbuy = False
-            limit = pip_previous_close - pip_result
+            x = x[-10000:]
         
-        # PRINT THE RESULTS FROM THE PREDICTION
-        print(f"Predictions have predicted the price being {direction} than the previous close of: {last_price} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit} with a spread of {spread}.")
+        if not firstRun:
+            # TRAIN THE DATA TO GET PREDICTIONS
+            last_price = con.get_last_price(ticker)["Ask"].item()
+            x.append(last_price)
+            model = ARIMA(x, order=(5,1,0))
+            model_fit = model.fit(disp=0)
+            output = model_fit.forecast()
+            result = output[0][0]
 
-        # SKIP TRADING ON FIRST RUN OF LOOP
-        if firstRun:
-            print("First run of loop, skipping trade.")
-            firstRun = False
-        else:
+            # CALCULATE VALUE IN PIPS
+            pip_result = result / one_pip
+            pip_previous_close = last_price / one_pip
+
+            # LOG PREDICTIONS BASED ON CURRENT PRICE
+            if result > last_price:
+                direction = "Higher"
+                isbuy = True
+                limit = pip_result - pip_previous_close
+            else:
+                direction = "Lower"
+                isbuy = False
+                limit = pip_previous_close - pip_result
+            
+            # PRINT THE RESULTS FROM THE PREDICTION
+            print(f"Predictions have predicted the price being {direction} than the previous close of: {last_price} at the next interval of: {next_interval}.\nPrice predicted: {result}, pip difference is {limit} with a spread of {spread}.")
+
             # ALL THE TRADING LOGIC HERE BASED ON DIRECTION AND IF THERE ARE ANY OPEN TRADES OF THAT TICKER
             # ONLY TRADES IF THE DIFFERENCE MEETS THE SPECIFIED MARGIN TO TRADE + THE SPREAD
             if auto_trade:
@@ -280,6 +276,9 @@ if __name__ == "__main__":
 
             with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
                 json.dump(trade_log,f,indent=2,sort_keys=True)
+        else:
+            print("First run of loop, skipping trade.")
+            firstRun = False
 
         while True:
             # GET UPDATED DF
