@@ -47,10 +47,10 @@ def calculate_lot_size(stop_pips):
     one_percent = balance / 100
     last_price = con.get_last_price(ticker)["Ask"].item()
     standard_lot = (0.0001 / last_price) * 100000
-    print(standard_lot)
     lot_size = (one_percent / stop_pips) / standard_lot
     lots = lot_size * 100
     print(f"One percent of your account is {one_percent}, this is equal to {lots} microlots.")
+    return lots
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
