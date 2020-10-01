@@ -210,6 +210,7 @@ if __name__ == "__main__":
         if not firstRun:
             # TRAIN THE DATA TO GET PREDICTIONS
             last_price = con.get_last_price(ticker)["Ask"].item()
+            last_price = round(last_price,5)
             x = x.tolist()
             x.append(last_price)
             x = x[-10000:]
@@ -279,7 +280,7 @@ if __name__ == "__main__":
                 trade_log = json.load(f)
             
             # UPDATE JSON DICT WITH NEW PREDICTION DATA AND DUMP IT
-            trade_log[dt.datetime.strftime(next_interval,"%Y-%m-%d %H:%M:%S")] = {"close":None,"prediction":result,"predicted_direction_from_current":direction,"previous_close":last_price,"correct_prediction":None,"took_trade":took_trade}
+            trade_log[dt.datetime.strftime(next_interval+dt.timedelta(seconds=1),"%Y-%m-%d %H:%M:%S")] = {"close":None,"prediction":result,"predicted_direction_from_current":direction,"previous_close":last_price,"correct_prediction":None,"took_trade":took_trade}
 
             with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
                 json.dump(trade_log,f,indent=2,sort_keys=True)
