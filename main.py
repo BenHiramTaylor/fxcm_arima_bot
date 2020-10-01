@@ -47,10 +47,8 @@ def calculate_lot_size():
     one_percent = balance / 100
     last_price = con.get_last_price(ticker)["Ask"].item()
     price_per_pip = 0.0001 / last_price
-    one_standard_lot_value = price_per_pip * 100000 
-    standard_lots = one_percent / one_standard_lot_value
-    lots = standard_lots * 100
-    print(f"One percent of your account is {one_percent}, this is equal to {lots} micro lots (1000 units) at a value of {one_standard_lot_value} per standard lot.")
+    lots = (one_percent / price_per_pip) / 100000
+    print(f"One percent of your account is {one_percent}, this is equal to {lots} micro lots (1000 units).")
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
@@ -104,7 +102,7 @@ if __name__ == "__main__":
     firstRun = True
 
     # CONNECT TO FXCM
-    con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
+    con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.log", log_level="error")
     print("Generated Default configs and established a connection to FXCM.")
     # SET THE DEFAULT ACCOUNT USING THE ACCOUNT ID PROVIDED
     con.set_default_account(account_id)
@@ -113,7 +111,7 @@ if __name__ == "__main__":
     while True:
         # RELOAD CONNECTION
         if not con.is_connected():
-            con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.txt", log_level="error")
+            con = fxcmpy.fxcmpy(access_token=access_token, server=account_type, log_file=f"Bot_Logs.log", log_level="error")
         # LOAD LAST RUN TIMES, ADD TICKER DEFAULT TO 0
         if not os.path.exists(f"JSON\\LastRunTimes_{interval}.json"):
             with open(f"JSON\\LastRunTimes_{interval}.json","w") as f:
@@ -323,9 +321,9 @@ if __name__ == "__main__":
                     else:
                         # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
                         stop_pips = limit/2
+                        lot_size = calculate_lot_size()
                         trailing_step = stop_pips
                         stop_pips = 0 - stop_pips
-                        lot_size = calculate_lot_size()
                         con.open_trade(
                             symbol=ticker,
                             is_buy=isbuy,
