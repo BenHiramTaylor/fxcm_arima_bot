@@ -131,7 +131,7 @@ if __name__ == "__main__":
             elif time_since_run >= interval_seconds:
                 print(f"It has been {time_since_run} seconds since last run. running now..")
             else:
-                last_run_dt = dt.datetime.fromtimestamp(LastRun)
+                last_run_dt = dt.datetime.utcfromtimestamp(LastRun)
                 next_interval = last_run_dt + dt.timedelta(seconds=interval_seconds)
                 continue
         else:
