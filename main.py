@@ -384,9 +384,6 @@ if __name__ == "__main__":
         # DUMP TRADE LOG
         with open(f"JSON\\{ticker_file}_{interval}_trade_log.json","w")as f:
             json.dump(trade_log,f,indent=2,sort_keys=True)
-        
-        previous_close_df = pd.read_json(f"JSON\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
-        previous_close_df.index.name = "date"
 
         # REMAKE X
         x = new_df["close"].values
