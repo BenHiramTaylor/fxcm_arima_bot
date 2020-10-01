@@ -33,7 +33,7 @@ def KillOldTrades():
                 new_open_positions.append(obj["currency"])
     return new_open_positions
 
-def calculate_lot_size():
+def calculate_lot_size(stop_pips):
     # CALCULATE A 2:1 RR
     accounts= con.get_accounts(kind="list")
     balance = None
@@ -46,9 +46,11 @@ def calculate_lot_size():
         exit(1)
     one_percent = balance / 100
     last_price = con.get_last_price(ticker)["Ask"].item()
-    price_per_pip = 0.0001 / last_price
-    lots = (one_percent / price_per_pip) / 100000
-    print(f"One percent of your account is {one_percent}, this is equal to {lots} micro lots (1000 units).")
+    standard_lot = (0.0001 / last_price) * 100000
+    print(standard_lot)
+    lot_size = (one_percent / stop_pips) / standard_lot
+    lots = lot_size * 100
+    print(f"One percent of your account is {one_percent}, this is equal to {lots} microlots.")
 
 def load_full_df(ticker, interval):
     startTime = dt.datetime.now().timestamp()
@@ -321,7 +323,7 @@ if __name__ == "__main__":
                     else:
                         # TRADE HERE WITH SPECIFIED SETTINGS 2:1 RR AND A STOP TRAILING IN 10THS
                         stop_pips = limit/2
-                        lot_size = calculate_lot_size()
+                        lot_size = calculate_lot_size(stop_pips)
                         trailing_step = stop_pips
                         stop_pips = 0 - stop_pips
                         con.open_trade(
