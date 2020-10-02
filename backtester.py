@@ -79,6 +79,7 @@ if __name__ == "__main__":
             json.dump(new_json_data,f,indent=2,sort_keys=True)
     # lOAD THE BACKTESTING DATA IF IT EXISTS
     all_data = pd.read_json(f"Backtesting\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
+    all_data.index = all_data.index.astype(str)
     print(f"Loaded initial backtesting dataframe of {len(all_data)} values.")
 
     # CLOSE CONNECTION AT THE OF NEEDING IT
