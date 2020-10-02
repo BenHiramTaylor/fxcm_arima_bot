@@ -156,9 +156,8 @@ if __name__ == "__main__":
         json.dump(trade_log, f, indent=2,sort_keys=True)
 
     # RE OPEN AS READ ONLY FOR RESULT CALCULATIONS
-    # OPEN TRADE LOG
     with open(f"Backtesting\\{ticker_file}_{interval}_trade_log_arima_order_{str(arima_order)}_training_data_intervals_{str(training_data_intervals)}.json","r") as f:
-        trade_log = json.load(f)
+        data = json.load(f)
 
     # GENERATE RESULTS
     total_predictions = list()
@@ -168,8 +167,7 @@ if __name__ == "__main__":
     could_have_taken = list()
     could_have_taken_correct = list()
     differences = list()
-    with open(f"JSON\\{ticker}_{interval}_trade_log.json","r") as f:
-        data = json.load(f)
+
 
     for period in data:
         if data[period]["correct_prediction"] is None:
