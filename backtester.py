@@ -81,6 +81,9 @@ if __name__ == "__main__":
     all_data = pd.read_json(f"Backtesting\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
     print(f"Loaded initial backtesting dataframe of {len(all_data)} values.")
 
+    # CLOSE CONNECTION AT THE OF NEEDING IT
+    con.close()
+
     # GET CLOSE VALUES
     x = all_data["close"].values.tolist()
     # GET DATES
@@ -130,9 +133,6 @@ if __name__ == "__main__":
         }
         with open(f"Backtesting\\{ticker_file}_{interval}_trade_log_arima_order_{str(arima_order)}_training_data_intervals_{str(training_data_intervals)}.json","w") as f:
             json.dump(trade_log, f, indent=2,sort_keys=True)
-
-    # CLOSE CONNECTION AT THE END
-    con.close()
 
     # OPEN TRADE LOG
     with open(f"Backtesting\\{ticker_file}_{interval}_trade_log_arima_order_{str(arima_order)}_training_data_intervals_{str(training_data_intervals)}.json","r") as f:
