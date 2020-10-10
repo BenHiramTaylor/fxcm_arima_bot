@@ -31,7 +31,7 @@ def load_full_df(ticker, interval):
 if __name__ == "__main__":
     # CONFIGURABLE SETTINGS
     arima_order = (5,1,0)
-    training_data_intervals = 10000
+    training_data_intervals = 30000
 
     # DEFAULT SETTINGS
     warnings.filterwarnings('ignore', 'statsmodels.tsa.arima_model.ARMA',
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     with open(f"Backtesting\\{ticker_file}_{interval}_trade_log_arima_order_{str(arima_order)}_training_data_intervals_{str(training_data_intervals)}.json","r") as f:
         trade_log = json.load(f)
 
-    total = len(all_data) - training_data_intervals
+    total = len(all_data) - (training_data_intervals + 5)
     # START RUNNING PREDICTIONS
     for n in range(total):
         print(f"{n}/{total}")
