@@ -57,9 +57,6 @@ if __name__ == "__main__":
     next_interval = None
     interval_seconds = period_to_seconds[interval]
 
-    # CONNECT TO FXCM
-    con = fxcmpy.fxcmpy(access_token=access_token, server=account_type)
-    print("Generated Default configs and established a connection to FXCM.")
 
     # CREATE DEFAULT FOLDERS AND FILES IF THEY DONT EXIST
     if not os.path.exists("Backtesting"):
@@ -68,6 +65,9 @@ if __name__ == "__main__":
         with open(f"Backtesting\\{ticker_file}_{interval}_trade_log_arima_order_{str(arima_order)}_training_data_intervals_{str(training_data_intervals)}.json","w") as f:
             json.dump({},f)
     if not os.path.exists(f"Backtesting\\{ticker_file}_{interval}_price_log.json"):
+        # CONNECT TO FXCM
+        con = fxcmpy.fxcmpy(access_token=access_token, server=account_type)
+        print("Generated Default configs and established a connection to FXCM.")
         print("Loading full DataFrame.")
         df = load_full_df(ticker, interval)
         df.index = df.index.astype(str)
@@ -77,13 +77,14 @@ if __name__ == "__main__":
         new_json_data = json.loads(json_string)
         with open(f"Backtesting\\{ticker_file}_{interval}_price_log.json","w")as f:
             json.dump(new_json_data,f,indent=2,sort_keys=True)
+        # CLOSE CONNECTION AT THE OF NEEDING IT
+        con.close()
     # lOAD THE BACKTESTING DATA IF IT EXISTS
     all_data = pd.read_json(f"Backtesting\\{ticker_file}_{interval}_price_log.json", orient="index", convert_dates=False)
     all_data.index = all_data.index.astype(str)
     print(f"Loaded initial backtesting dataframe of {len(all_data)} values.")
 
-    # CLOSE CONNECTION AT THE OF NEEDING IT
-    con.close()
+    
 
     # GET CLOSE VALUES
     x = all_data["close"].values.tolist()
