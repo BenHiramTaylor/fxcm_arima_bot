@@ -98,7 +98,7 @@ if __name__ == "__main__":
     total = len(all_data) - (training_data_intervals + 5)
     # START RUNNING PREDICTIONS
     for n in range(total):
-        print(f"{n}/{total}")
+        print(f"{n}/{total-1}")
         e = training_data_intervals + n
         x_train = x[n:e]
         previous_close = x[e]
